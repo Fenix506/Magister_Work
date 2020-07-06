@@ -1,0 +1,49 @@
+﻿<Window x:Class="UI.Views.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UI.Views"
+        mc:Ignorable="d"
+        Height="450" Width="800" 
+        MaxHeight="900" MaxWidth="1600"
+        MinHeight="225" MinWidth="400">
+    <Grid>
+        <Menu Height="25" VerticalAlignment="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Select"></MenuItem>
+                <MenuItem Header="Create"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="Option">
+                <MenuItem Header="Bloking"></MenuItem>
+                <MenuItem Header="Compression"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="About"></MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="20"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="20"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="1" Grid.Column="1">
+                Обраний файл для роботи: 
+            </TextBlock>
+            <TextBlock 
+                Grid.Row="3" 
+                Grid.Column="1" 
+                Grid.ColumnSpan="2" 
+                Background="Silver"
+                ></TextBlock>
+        </Grid>
+       
+    </Grid>
+</Window>
