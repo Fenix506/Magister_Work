@@ -11,11 +11,13 @@
     <Grid>
         <Menu Height="25" VerticalAlignment="Top">
             <MenuItem Header="File">
-                <MenuItem Header="Select"></MenuItem>
-                <MenuItem Header="Create"></MenuItem>
+                <MenuItem Header="Select" x:Name="SelectFile"></MenuItem>
+                <MenuItem Header="Generate" x:Name="GenerateFile"></MenuItem>
             </MenuItem>
             <MenuItem Header="Option">
-                <MenuItem Header="Bloking"></MenuItem>
+                <MenuItem Header="Bloking" x:Name="Bloking"></MenuItem>
+                <MenuItem Header="BlokingVer2" x:Name="BlokingVer2"></MenuItem>
+                <MenuItem Header="Save Blocks" x:Name="SaveBlocks"/>
                 <MenuItem Header="Compression"></MenuItem>
             </MenuItem>
             <MenuItem Header="About"></MenuItem>
@@ -24,26 +26,54 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="20"></RowDefinition>
                 <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="20"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="20"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Row="1" Grid.Column="1">
-                Обраний файл для роботи: 
+            <TextBlock Grid.Row="1" Grid.Column="1" Background="OldLace">
+                Opened file Info:
             </TextBlock>
-            <TextBlock 
-                Grid.Row="3" 
+            <TextBlock Grid.Row="2" Grid.Column="1">
+                Name:
+            </TextBlock>
+            <TextBlock Grid.Row="2" Grid.Column="2" x:Name="FileName"/>
+            <TextBlock Grid.Row="3" Grid.Column="1">
+               Size in bytes:
+            </TextBlock>
+            <TextBlock Grid.Row="3" Grid.Column="2" x:Name="FileSize"/>
+            <Border Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="Silver"  >     
+                    <StackPanel>
+                    <TextBlock>File entropy:</TextBlock>
+                    <TextBlock>Count blocks:</TextBlock>
+                    <TextBlock>Block entropy:</TextBlock>
+                </StackPanel></Border>
+                    <StackPanel Grid.Row="4" Grid.Column="2" Margin="0 0 5 0">
+                <TextBlock x:Name="FileEntropy"/>
+                <TextBlock x:Name="CountBlocks"/>
+                <TextBlock x:Name="BlockEntropy"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="6" 
                 Grid.Column="1" 
-                Grid.ColumnSpan="2" 
+                Grid.ColumnSpan="3" >
+                <TextBlock x:Name="Timer">Timer</TextBlock>
+                <ProgressBar  Minimum="0" Maximum="100" x:Name="ProgressBar" Height="25" />
+                <TextBlock 
+                
                 Background="Silver"
                 ></TextBlock>
+            </StackPanel>
+            
         </Grid>
-       
     </Grid>
 </Window>
