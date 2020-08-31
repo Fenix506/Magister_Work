@@ -1,5 +1,5 @@
 ﻿using Caliburn.Micro;
-using Microsoft.Win32;
+
 using MinFiler;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace UI.ViewModels
 {
@@ -26,7 +27,7 @@ namespace UI.ViewModels
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private Stopwatch stopwatch = new Stopwatch();
         private string currentTime = "00:00:00";
-
+        private bool autoSaving;
         public MainViewModel(IWindowManager windowManager)
         {
             DisplayName = "MinFiler";
@@ -105,20 +106,26 @@ namespace UI.ViewModels
                 NotifyOfPropertyChange(() => Timer);
             }
         }
+        public bool AutoSaving
+        {
+            get { return autoSaving; }
+            set
+            {
+                autoSaving = value;
+                NotifyOfPropertyChange(() => AutoSaving);
+            }
+        }
         #endregion
 
         #region Button
         public void SelectFile()
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "All files(*.*)|*.*";
-            if (openFileDialog.ShowDialog() == true)
+            var openFileDialog = new CommonOpenFileDialog();
+            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 FileName = openFileDialog.FileName;
                 FileSize = new FileInfo(FileName).Length;
             }
-
-
 
         }
         public void GenerateFile()
@@ -143,29 +150,27 @@ namespace UI.ViewModels
             CountBlocks = blockFiler.Blocks.Count;
 
         }
-        public async void BlokingVer2()
+        public void SaveBlocks()
         {
-            var blockFiler = new BlockFiler(FileName, BlockEntropy);
-            blockFiler.AddProgress += AddProgress;
-            blockFiler.Finish += Finish;
-            ResetTimer();
-            StartTimer();
-            await blockFiler.Bloking_Ver2Async();
-            StopTimer();
-            FileEntropy = blockFiler.FileEntropy;
-            CountBlocks = blockFiler.Blocks.Count;
-        }
-        public void AddProgress()
-        {
-            ProgressBar++;
-        }
-        public void Finish()
-        {
-            ProgressBar = 0;
+            var folderDialog = new CommonOpenFileDialog();
+            folderDialog.IsFolderPicker = true;
+            if (folderDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+
+            }
+
         }
         #endregion
 
         #region Methods
+        private void AddProgress()
+        {
+            ProgressBar++;
+        }
+        private void Finish()
+        {
+            ProgressBar = 0;
+        }
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
             if (stopwatch.IsRunning)

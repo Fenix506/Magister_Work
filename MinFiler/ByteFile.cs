@@ -24,13 +24,13 @@ namespace MinFiler
             if (bufferSize > binaryReader.BaseStream.Length)
             {
                 countPartReadFile = (int)(binaryReader.BaseStream.Length / bufferSize);
+                ReadNewPartFile();
             }
             else
             {
                 buffer = binaryReader.ReadBytes((int)binaryReader.BaseStream.Length);
             }
             partProgress = binaryReader.BaseStream.Length / 100;
-            ReadNewPartFile();
             currentPart = 0;
             currentByte = 0;
         }

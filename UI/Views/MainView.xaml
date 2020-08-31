@@ -16,8 +16,12 @@
             </MenuItem>
             <MenuItem Header="Option">
                 <MenuItem Header="Bloking" x:Name="Bloking"></MenuItem>
-                <MenuItem Header="BlokingVer2" x:Name="BlokingVer2"></MenuItem>
                 <MenuItem Header="Save Blocks" x:Name="SaveBlocks"/>
+                <MenuItem >
+                    <MenuItem.Header>
+                        <CheckBox x:Name="AutoSaving">Auto Saving</CheckBox>
+                    </MenuItem.Header>
+                </MenuItem>
                 <MenuItem Header="Compression"></MenuItem>
             </MenuItem>
             <MenuItem Header="About"></MenuItem>
@@ -51,13 +55,14 @@
                Size in bytes:
             </TextBlock>
             <TextBlock Grid.Row="3" Grid.Column="2" x:Name="FileSize"/>
-            <Border Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="Silver"  >     
-                    <StackPanel>
+            <Border Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="Silver"  >
+                <StackPanel>
                     <TextBlock>File entropy:</TextBlock>
                     <TextBlock>Count blocks:</TextBlock>
                     <TextBlock>Block entropy:</TextBlock>
-                </StackPanel></Border>
-                    <StackPanel Grid.Row="4" Grid.Column="2" Margin="0 0 5 0">
+                </StackPanel>
+            </Border>
+            <StackPanel Grid.Row="4" Grid.Column="2" Margin="0 0 5 0">
                 <TextBlock x:Name="FileEntropy"/>
                 <TextBlock x:Name="CountBlocks"/>
                 <TextBlock x:Name="BlockEntropy"/>
@@ -73,7 +78,7 @@
                 Background="Silver"
                 ></TextBlock>
             </StackPanel>
-            
+
         </Grid>
     </Grid>
 </Window>
