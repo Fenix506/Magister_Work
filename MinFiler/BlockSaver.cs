@@ -9,9 +9,9 @@ namespace MinFiler
     public class BlockSaver
     {
         private string directoryPath;
-        private LinkedList<Block> Blocks;
+        //private LinkedList<Block> Blocks;
 
-        public BlockSaver(string directoryPath,)
+        public BlockSaver(string directoryPath)
         {
             this.directoryPath = directoryPath;
         }

@@ -147,7 +147,7 @@ namespace UI.ViewModels
             await blockFiler.BlokingAsync();
             StopTimer();
             FileEntropy = blockFiler.FileEntropy;
-            CountBlocks = blockFiler.Blocks.Count;
+            CountBlocks = 0;
 
         }
         public void SaveBlocks()

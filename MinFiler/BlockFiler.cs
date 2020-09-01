@@ -71,31 +71,35 @@ namespace MinFiler
             uint[] fullCountBytes = new uint[256];
             byte[] blockCountBytes = new byte[256];
             var file = new ByteFile(fullFileName, AddProgress, Finish);
+            var blockList = new BlockList();
 
             byte readByte;
-            Block currentBlock = new Block();
             double currentEntropy, previousEntropy = 0;
             while (!file.isEnd())
             {
                 readByte = file.getByte();
                 fullCountBytes[readByte]++;
                 blockCountBytes[readByte]++;
-
-                currentEntropy = Entropy(blockCountBytes);
-                if (currentEntropy < blockEntropy)
+                if (blockList.CurrentBlockLength <= 4)
                 {
-                    currentBlock.Data.Add(readByte);
+                    currentEntropy = 0;
                 }
                 else
                 {
-                    currentBlock.Entropy = previousEntropy;
-                    Blocks.Add(currentBlock);
-                    currentBlock = new Block();
-                    currentBlock.Data.Add(readByte);
+                    currentEntropy = Entropy(blockCountBytes);
+                }
+                if (currentEntropy < blockEntropy)
+                {
+                    blockList.AddToBlock(readByte);
+                }
+                else
+                {
+                    blockList.CreateNewBlock();
+                    blockList.AddToBlock(readByte);
                     blockCountBytes = new byte[256];
                     blockCountBytes[readByte]++;
                 }
-                previousEntropy = currentEntropy;
+                // previousEntropy = currentEntropy;
 
             }
             FileEntropy = Entropy(fullCountBytes);

@@ -17,7 +17,13 @@ namespace MinFiler.Blocks
         }
         public void AddToBlock(byte currentByte)
         {
-            currentBlock.Data.AddLast(currentByte);
+            currentBlock.Data.Add(currentByte);
         }
+        public void CreateNewBlock()
+        {
+            Blocks.AddLast(currentBlock);
+            currentBlock = new Block();
+        }
+        public int CurrentBlockLength => currentBlock.CountBlock;
     }
 }
