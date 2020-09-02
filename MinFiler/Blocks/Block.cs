@@ -8,7 +8,7 @@ namespace MinFiler.Blocks
 {
     public class Block
     {
-        public List<byte> Data { get; set; } = new List<byte>(20);
+        public List<byte> Data { get; set; } = new List<byte>(10);
         public int CountBlock => Data.Count();
         public double Entropy { get; set; }
 
