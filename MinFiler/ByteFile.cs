@@ -10,42 +10,51 @@ namespace MinFiler
     public class ByteFile
     {
 
-        private const int bufferSize = 104857600;
-        private byte[] buffer;
+        private const int bufferSize = 104857596;//104857600
+        private readonly int countThreads;
         private BinaryReader binaryReader;
-        private int countPartReadFile;
+        public int CountPartReadFile { get; private set; }
+        public byte[] Buffer { get;  set; }
+        public int CountThreads => countThreads;
+        public int BufferArraySize => Buffer.Length;
         private int currentPart, currentByte;
-        private Action addProcess, finish;
+        private Action addProcess;
         private long partProgress;
 
         public ByteFile(string fullFileName)
         {
             binaryReader = new BinaryReader(File.OpenRead(fullFileName));
-            if (bufferSize > binaryReader.BaseStream.Length)
+            partProgress = binaryReader.BaseStream.Length / 100;
+            if (bufferSize < binaryReader.BaseStream.Length)
             {
-                countPartReadFile = (int)(binaryReader.BaseStream.Length / bufferSize);
+                CountPartReadFile = (int)(binaryReader.BaseStream.Length / bufferSize);
+                countThreads = 4;
                 ReadNewPartFile();
             }
             else
             {
-                buffer = binaryReader.ReadBytes((int)binaryReader.BaseStream.Length);
+                Buffer = binaryReader.ReadBytes((int)binaryReader.BaseStream.Length);
+                countThreads = 1;
+                binaryReader.Dispose();
             }
-            partProgress = binaryReader.BaseStream.Length / 100;
+            
+
             currentPart = 0;
             currentByte = 0;
+
+           
         }
-        public ByteFile(string fullFileName, Action addProcess, Action finish) : this(fullFileName)
+        public ByteFile(string fullFileName, Action addProcess) : this(fullFileName)
         {
             this.addProcess = addProcess;
-            this.finish = finish;
+           
         }
 
         public bool isEnd()
         {
-            if (currentPart == countPartReadFile && currentByte == buffer.Length)
+            if (currentPart == CountPartReadFile && currentByte == Buffer.Length)
             {
                 binaryReader.Dispose();
-                finish.Invoke();
                 return true;
             }
             else
@@ -53,29 +62,36 @@ namespace MinFiler
                 return false;
             }
         }
-        public byte getByte()
+        public byte GetByte()
         {
-            if ((buffer.Length * currentPart + currentByte + 1) % partProgress == 0)
+            if ((Buffer.Length * currentPart + currentByte) % partProgress == 0)
                 addProcess.Invoke();
-            if (currentByte == buffer.Length)
+            if (currentByte == Buffer.Length)
             {
                 currentByte = 0;
                 ReadNewPartFile();
             }
-            return buffer[currentByte++];
+            return Buffer[currentByte++];
         }
-        private void ReadNewPartFile()
+        public byte GetByte(int index)
         {
-            if (currentPart < countPartReadFile)
+            if ((Buffer.Length * currentPart + index) % partProgress == 0)
+                addProcess.Invoke();
+            return Buffer[index];
+        }
+        public void ReadNewPartFile()
+        {
+            if (currentPart < CountPartReadFile)
             {
-                buffer = binaryReader.ReadBytes(bufferSize);
+                Buffer = binaryReader.ReadBytes(bufferSize);
                 currentPart++;
             }
             else
             {
-                buffer = binaryReader.ReadBytes((int)(binaryReader.BaseStream.Length % bufferSize));
-
+                Buffer = binaryReader.ReadBytes((int)(binaryReader.BaseStream.Length % bufferSize));
+                binaryReader.Dispose();
             }
         }
+
     }
 }

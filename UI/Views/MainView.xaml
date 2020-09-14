@@ -15,7 +15,8 @@
                 <MenuItem Header="Generate" x:Name="GenerateFile"></MenuItem>
             </MenuItem>
             <MenuItem Header="Option">
-                <MenuItem Header="Bloking" x:Name="Bloking"></MenuItem>
+                <MenuItem Header="Bloking in one thread" x:Name="BlokingOneThread"></MenuItem>
+                <MenuItem Header="Bloking in multithread" x:Name="BlokingMultiThread"></MenuItem>
                 <MenuItem Header="Save Blocks" x:Name="SaveBlocks"/>
                 <MenuItem >
                     <MenuItem.Header>

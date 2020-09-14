@@ -12,12 +12,24 @@ namespace MinFiler.Blocks
         private Block currentBlock;
         private uint[] fullCountBytes;
         private Dictionary<byte, byte> currentBlockStatistic;
+        public int Position { get; set; }
+        public int CurrentBlockLength => currentBlock.CountBlock;
+        public int CountBlocks => Blocks.Count;
         public BlockList()
         {
             Blocks = new LinkedList<Block>();
             currentBlock = new Block();
             fullCountBytes = new uint[256];
             currentBlockStatistic = new Dictionary<byte, byte>();
+        }
+        public static BlockList operator +(BlockList blockList1, BlockList blockList2) {
+            var blockList = new BlockList();
+            blockList.Blocks = blockList1.Blocks;
+            foreach(var item in blockList2.Blocks)
+            {
+                blockList.Blocks.AddLast(item);
+            }
+            return blockList;
         }
         public void AddToBlock(byte currentByte)
         {
@@ -38,8 +50,6 @@ namespace MinFiler.Blocks
             currentBlock = new Block();
             currentBlockStatistic = new Dictionary<byte, byte>();
         }
-        public int CurrentBlockLength => currentBlock.CountBlock;
-        public int CountBlocks => Blocks.Count;
         public double CurrentBlockEntropy()
         {
             uint length = 0;
@@ -82,6 +92,17 @@ namespace MinFiler.Blocks
                 }
             }
             return -entropy;
+        }
+
+        public void EndCurrentBlock()
+        {
+            if (CurrentBlockLength > 0)
+            {
+                Blocks.AddLast(currentBlock);
+                currentBlock = new Block();
+                currentBlockStatistic = new Dictionary<byte, byte>();
+            }
+           
         }
     }
 }

@@ -1,16 +1,10 @@
 ﻿using Caliburn.Micro;
-
-using MinFiler;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using MinFiler;
 
 namespace UI.ViewModels
 {
@@ -28,6 +22,7 @@ namespace UI.ViewModels
         private Stopwatch stopwatch = new Stopwatch();
         private string currentTime = "00:00:00";
         private bool autoSaving;
+        private object locker = new object();
         public MainViewModel(IWindowManager windowManager)
         {
             DisplayName = "MinFiler";
@@ -137,14 +132,23 @@ namespace UI.ViewModels
                 //generate file
             }
         }
-        public async void Bloking()
+        public async void BlokingOneThread()
         {
-            var blockFiler = new BlockFiler(FileName, BlockEntropy);
-            blockFiler.AddProgress += AddProgress;
-            blockFiler.Finish += Finish;
-            ResetTimer();
+            var blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
+                      
             StartTimer();
             await blockFiler.BlokingAsync();
+            StopTimer();
+            FileEntropy = blockFiler.FileEntropy;
+            CountBlocks = blockFiler.BlockList.CountBlocks;
+
+        }
+        public async void BlokingMultiThread()
+        {
+            var blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
+
+            StartTimer();
+            await blockFiler.ParallelBlokingAsync();
             StopTimer();
             FileEntropy = blockFiler.FileEntropy;
             CountBlocks = blockFiler.BlockList.CountBlocks;
@@ -165,11 +169,7 @@ namespace UI.ViewModels
         #region Methods
         private void AddProgress()
         {
-            ProgressBar++;
-        }
-        private void Finish()
-        {
-            ProgressBar = 0;
+            lock(locker) { ProgressBar++; }
         }
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
@@ -183,6 +183,7 @@ namespace UI.ViewModels
         }
         private void StartTimer()
         {
+            ResetTimer();
             stopwatch.Start();
             dispatcherTimer.Start();
         }
