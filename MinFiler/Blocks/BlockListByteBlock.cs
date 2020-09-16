@@ -6,25 +6,35 @@ using System.Threading.Tasks;
 
 namespace MinFiler.Blocks
 {
-    public abstract class BlockList<T> where T : IBlock
+    public class BlockListByteBlock
     {
-        protected uint[] fullCountBytes;
-        protected Dictionary<byte, uint> currentBlockStatistic;
-        abstract protected T currentBlock { get; set; }
-        abstract public LinkedList<T> Blocks { get; set; }
-        abstract public int CurrentBlockLength { get; }
+        private BlocksInList currentBlock;
+        private uint[] fullCountBytes;
+        private Dictionary<byte, uint> currentBlockStatistic;
+        public LinkedList<BlocksInList> Blocks { get; private set; }
+        public int CurrentBlockLength => currentBlock.Data.Count;
         public int CountBlocks => Blocks.Count;
-        public BlockList()
+        public BlockListByteBlock()
         {
+            Blocks = new LinkedList<BlocksInList>();
+            currentBlock = new BlocksInList();
             fullCountBytes = new uint[256];
             currentBlockStatistic = new Dictionary<byte, uint>();
         }
-        abstract public void AddToList(BlockList<T> blockList);
-        abstract public void EndCurrentBlock();
-        abstract public void CreateNewBlock();
+        public static BlockListByteBlock operator +(BlockListByteBlock blockList1, BlockListByteBlock blockList2)
+        {
+
+            blockList1.EndCurrentBlock();
+            blockList2.EndCurrentBlock();
+            foreach (var item in blockList2.Blocks)
+            {
+                blockList1.Blocks.AddLast(item);
+            }
+            return blockList1;
+        }
         public void AddToBlock(byte currentByte)
         {
-            currentBlock.Add(currentByte);
+            currentBlock.Data.Add(currentByte);
             fullCountBytes[currentByte]++;
             if (currentBlockStatistic.ContainsKey(currentByte))
             {
@@ -34,6 +44,12 @@ namespace MinFiler.Blocks
             {
                 currentBlockStatistic.Add(currentByte, 1);
             }
+        }
+        public void CreateNewBlock()
+        {
+            Blocks.AddLast(currentBlock);
+            currentBlock = new BlocksInList();
+            currentBlockStatistic = new Dictionary<byte, uint>();
         }
         public double CurrentBlockEntropy()
         {
@@ -80,12 +96,16 @@ namespace MinFiler.Blocks
             }
             return -entropy;
         }
-        public void Dispose()
+
+        public void EndCurrentBlock()
         {
-            fullCountBytes = null;
-            currentBlockStatistic = null;
-            Blocks = null;
-            GC.Collect(2, GCCollectionMode.Forced);
+            if (CurrentBlockLength > 0)
+            {
+                Blocks.AddLast(currentBlock);
+                currentBlock = new BlocksInList();
+                currentBlockStatistic = new Dictionary<byte, uint>();
+            }
+
         }
     }
 }

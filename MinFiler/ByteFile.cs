@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 
 namespace MinFiler
 {
-    public class ByteFile
+    public class ByteFile : IDisposable
     {
 
-        private const int bufferSize = 104857596;//104857600
-        private readonly int countThreads;
+        public const int bufferSize = 52428800;//104857600 7340032
         private BinaryReader binaryReader;
         public int CountPartReadFile { get; private set; }
-        public byte[] Buffer { get;  set; }
-        public int CountThreads => countThreads;
+        public byte[] Buffer { get; set; }
+        public int CountThreads { get; }
         public int BufferArraySize => Buffer.Length;
         private int currentPart, currentByte;
         private Action addProcess;
@@ -28,26 +27,25 @@ namespace MinFiler
             if (bufferSize < binaryReader.BaseStream.Length)
             {
                 CountPartReadFile = (int)(binaryReader.BaseStream.Length / bufferSize);
-                countThreads = 4;
+                CountThreads = 4;
                 ReadNewPartFile();
             }
             else
             {
                 Buffer = binaryReader.ReadBytes((int)binaryReader.BaseStream.Length);
-                countThreads = 1;
+                CountThreads = 1;
                 binaryReader.Dispose();
             }
-            
+
 
             currentPart = 0;
             currentByte = 0;
 
-           
+
         }
         public ByteFile(string fullFileName, Action addProcess) : this(fullFileName)
         {
             this.addProcess = addProcess;
-           
         }
 
         public bool isEnd()
@@ -73,6 +71,12 @@ namespace MinFiler
             }
             return Buffer[currentByte++];
         }
+
+        public bool GetBytesByIndex(long startBlock, long endBlock)
+        {
+            throw new NotImplementedException();
+        }
+
         public byte GetByte(int index)
         {
             if ((Buffer.Length * currentPart + index) % partProgress == 0)
@@ -89,9 +93,16 @@ namespace MinFiler
             else
             {
                 Buffer = binaryReader.ReadBytes((int)(binaryReader.BaseStream.Length % bufferSize));
-                binaryReader.Dispose();
+                binaryReader.Close();
             }
         }
 
+        public void Dispose()
+        {
+            binaryReader.Close();
+            Buffer = null;
+            GC.Collect();
+
+        }
     }
 }

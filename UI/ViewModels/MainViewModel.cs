@@ -23,11 +23,12 @@ namespace UI.ViewModels
         private string currentTime = "00:00:00";
         private bool autoSaving;
         private object locker = new object();
+        private BlockFiler blockFiler;
         public MainViewModel(IWindowManager windowManager)
         {
             DisplayName = "MinFiler";
             this.windowManager = windowManager;
-            BlockEntropy = 4;
+            BlockEntropy = 7.9;
             dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
         }
 
@@ -134,10 +135,10 @@ namespace UI.ViewModels
         }
         public async void BlokingOneThread()
         {
-            var blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
-                      
+            blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
+
             StartTimer();
-            await blockFiler.BlokingAsync();
+            await blockFiler.BlokingAsync(AutoSaving);
             StopTimer();
             FileEntropy = blockFiler.FileEntropy;
             CountBlocks = blockFiler.BlockList.CountBlocks;
@@ -145,13 +146,26 @@ namespace UI.ViewModels
         }
         public async void BlokingMultiThread()
         {
-            var blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
+            blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
 
             StartTimer();
-            await blockFiler.ParallelBlokingAsync();
+
+            await blockFiler.ParallelBlokingAsync(AutoSaving);
+
             StopTimer();
             FileEntropy = blockFiler.FileEntropy;
             CountBlocks = blockFiler.BlockList.CountBlocks;
+
+        }
+        public async void BlokingWithCompression()
+        {
+            blockFiler = new BlockFiler(FileName, AddProgress, BlockEntropy);
+
+            StartTimer();
+
+            await blockFiler.BlokingWithCompressAsync(AutoSaving);
+
+            StopTimer();
 
         }
         public void SaveBlocks()
@@ -169,7 +183,7 @@ namespace UI.ViewModels
         #region Methods
         private void AddProgress()
         {
-            lock(locker) { ProgressBar++; }
+            lock (locker) { ProgressBar++; }
         }
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {

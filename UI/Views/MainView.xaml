@@ -17,6 +17,7 @@
             <MenuItem Header="Option">
                 <MenuItem Header="Bloking in one thread" x:Name="BlokingOneThread"></MenuItem>
                 <MenuItem Header="Bloking in multithread" x:Name="BlokingMultiThread"></MenuItem>
+                <MenuItem Header="Bloking with compression" x:Name="BlokingWithCompression"></MenuItem>
                 <MenuItem Header="Save Blocks" x:Name="SaveBlocks"/>
                 <MenuItem >
                     <MenuItem.Header>

@@ -13,23 +13,43 @@ namespace MinFiler
     public class BlockFiler
     {
         private double blockEntropy;
+        private string fullFileName;
         private ByteFile file;
-        
+        private BlockSaver saver;
+        private Task saveTask;
         public double FileEntropy { get; set; }
-        public BlockList BlockList { get; set; }
+        public BlockList<BlockReference> BlockList { get; set; }
         public BlockFiler(string fullFileName, double blockEntropy = 4)
         {
             this.blockEntropy = blockEntropy;
-            BlockList = new BlockList();
+            BlockList = new BlockListReference();
             file = new ByteFile(fullFileName);
-
+            this.fullFileName = fullFileName;
+            var filename = new FileInfo(fullFileName).Name;
+            saver = new BlockSaver("D:\\Blocks", filename);
         }
         public BlockFiler(string fullFileName, Action AddProgress, double blockEntropy = 4)
             : this(fullFileName, blockEntropy)
         {
+            if (file != null)
+            {
+                file.Dispose();
+            }
             file = new ByteFile(fullFileName, AddProgress);
         }
-        public void Bloking()
+        public async Task BlokingAsync(bool save)
+        {
+            await Task.Run(() => Bloking(save));
+        }
+        public async Task ParallelBlokingAsync(bool save)
+        {
+            await Task.Run(() => ParralelBloking(save));
+        }
+        public async Task BlokingWithCompressAsync(bool save)
+        {
+            await Task.Run(() => BlokingWithCompress(save));
+        }
+        public void Bloking(bool save)
         {
             byte readByte;
             double currentEntropy;
@@ -56,20 +76,13 @@ namespace MinFiler
                 }
             }
             BlockList.EndCurrentBlock();
+
             FileEntropy = BlockList.FullEntropy();
         }
-        public async Task BlokingAsync()
-        {
-            await Task.Run(() => Bloking());
-        }
-        public async Task ParallelBlokingAsync()
-        {
-            await Task.Run(() => ParralelBloking());
-        }
-        public void ParralelBloking()
+        public void ParralelBloking(bool save)
         {
             var rangePartitioner = Partitioner.Create(0, file.BufferArraySize, file.BufferArraySize / file.CountThreads);
-            var partBlockList = new BlockList[file.CountThreads];
+            var partBlockList = new BlockList<BlockReference>[file.CountThreads];
 
             for (int part = 0; part < file.CountPartReadFile; part++)
             {
@@ -77,7 +90,8 @@ namespace MinFiler
 
                 (range, loopState, threadNum) =>
                   {
-                      partBlockList[threadNum] = new BlockList();
+
+                      partBlockList[threadNum] = new BlockListReference();
 
                       for (int i = range.Item1; i < range.Item2; i++)
                       {
@@ -102,21 +116,48 @@ namespace MinFiler
                   });
                 for (int i = 0; i < partBlockList.Length; i++)
                 {
-                    BlockList += partBlockList[i];
+                    BlockList.AddToList(partBlockList[i]);
                 }
+                if (save) SaveBlock();
                 file.ReadNewPartFile();
+
             }
 
-            Task<BlockList> EndOfFileTask = new Task<BlockList>(() => BlokingEndOfFile());
+            Task<BlockList<BlockReference>> EndOfFileTask = new Task<BlockList<BlockReference>>(() => BlokingEndOfFile());
             EndOfFileTask.Start();
             EndOfFileTask.Wait();
-            BlockList = BlockList + EndOfFileTask.Result;
+            BlockList.AddToList(EndOfFileTask.Result);
+
+
+            if (save) SaveBlock();
+
         }
-        public BlockList BlokingEndOfFile()
+        public void BlokingWithCompress(bool save)
+        {
+
+        }
+        public void SaveBlock()
+        {
+            saveTask = new Task(() => saver.SaveBlockList(BlockList, file));
+
+            saveTask.Start();
+            saveTask.Wait();
+            BlockList = new BlockListReference();
+        }
+
+
+
+        //public void SaveFile()
+        //{
+        //    saveTask = new Task(() => saver.CompressFile("C:\\Users\\maria\\Desktop\\Курсова робота.docx"));
+        //    saveTask.Start();
+        //    saveTask.Wait();
+        //}
+        private BlockList<BlockReference> BlokingEndOfFile()
         {
             byte readByte;
             double currentEntropy;
-            var blockList = new BlockList();
+            var blockList = new BlockListReference();
 
             for (int i = 0; i < file.BufferArraySize; i++)
             {

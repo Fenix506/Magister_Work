@@ -47,9 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blocks\Block.cs" />
     <Compile Include="BlockFiler.cs" />
     <Compile Include="BlockSaver.cs" />
+    <Compile Include="Blocks\BlocksInList.cs" />
+    <Compile Include="Blocks\BlockListByteBlock.cs" />
+    <Compile Include="Blocks\BlockReference.cs" />
+    <Compile Include="Blocks\BlockListReference.cs" />
+    <Compile Include="Blocks\IBlock.cs" />
     <Compile Include="Blocks\BlockList.cs" />
     <Compile Include="ByteFile.cs" />
     <Compile Include="FileShow.cs" />
