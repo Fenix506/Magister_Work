@@ -13,20 +13,19 @@ namespace MinFiler
     public class BlockFiler
     {
         private double blockEntropy;
-        private string fullFileName;
+        public string FullFileName { get; set; }
         private ByteFile file;
         private BlockSaver saver;
         private Task saveTask;
         public double FileEntropy { get; set; }
-        public BlockList<BlockReference> BlockList { get; set; }
+        public BlockList BlockList { get; set; }
         public BlockFiler(string fullFileName, double blockEntropy = 4)
         {
             this.blockEntropy = blockEntropy;
             BlockList = new BlockListReference();
             file = new ByteFile(fullFileName);
-            this.fullFileName = fullFileName;
-            var filename = new FileInfo(fullFileName).Name;
-            saver = new BlockSaver("D:\\Blocks", filename);
+            FullFileName = fullFileName;
+            saver = new BlockSaver("D:\\Blocks", fullFileName);
         }
         public BlockFiler(string fullFileName, Action AddProgress, double blockEntropy = 4)
             : this(fullFileName, blockEntropy)
@@ -43,7 +42,7 @@ namespace MinFiler
         }
         public async Task ParallelBlokingAsync(bool save)
         {
-            await Task.Run(() => ParralelBloking(save));
+            await Task.Run(() => ParralelBloking(save, false));
         }
         public async Task BlokingWithCompressAsync(bool save)
         {
@@ -79,10 +78,10 @@ namespace MinFiler
 
             FileEntropy = BlockList.FullEntropy();
         }
-        public void ParralelBloking(bool save)
+        public void ParralelBloking(bool save, bool compress)
         {
             var rangePartitioner = Partitioner.Create(0, file.BufferArraySize, file.BufferArraySize / file.CountThreads);
-            var partBlockList = new BlockList<BlockReference>[file.CountThreads];
+            var partBlockList = new BlockList[file.CountThreads];
 
             for (int part = 0; part < file.CountPartReadFile; part++)
             {
@@ -118,33 +117,49 @@ namespace MinFiler
                 {
                     BlockList.AddToList(partBlockList[i]);
                 }
-                if (save) SaveBlock();
+                if (save) SaveBlock(compress);
                 file.ReadNewPartFile();
 
             }
 
-            Task<BlockList<BlockReference>> EndOfFileTask = new Task<BlockList<BlockReference>>(() => BlokingEndOfFile());
+            Task<BlockList> EndOfFileTask = new Task<BlockList>(() => BlokingEndOfFile());
             EndOfFileTask.Start();
             EndOfFileTask.Wait();
             BlockList.AddToList(EndOfFileTask.Result);
+            FileEntropy = BlockList.FullEntropy();
 
-
-            if (save) SaveBlock();
+            if (save) SaveBlock(compress);
 
         }
         public void BlokingWithCompress(bool save)
         {
-
+            ParralelBloking(save, true);
         }
-        public void SaveBlock()
+        public void SaveBlock(bool compress)
         {
-            saveTask = new Task(() => saver.SaveBlockList(BlockList, file));
+            if (compress)
+            {
+                saveTask = new Task(() => saver.SaveCompressBlockList(BlockList, file));
+            }
+            else
+            {
+                switch (BlockList)
+                {
+                    case BlockListReference blockListReference:
+                        saveTask = new Task(() => saver.SaveBlockList(BlockList, file));
+                        break;
+                    case BlockListByteBlock blockListByteBlock:
+                        saveTask = new Task(() => saver.SaveBlockList(BlockList));
+                        break;
+                    default:
+                        throw new InvalidCastException();
+                }
+            }
 
             saveTask.Start();
             saveTask.Wait();
             BlockList = new BlockListReference();
         }
-
 
 
         //public void SaveFile()
@@ -153,7 +168,7 @@ namespace MinFiler
         //    saveTask.Start();
         //    saveTask.Wait();
         //}
-        private BlockList<BlockReference> BlokingEndOfFile()
+        private BlockList BlokingEndOfFile()
         {
             byte readByte;
             double currentEntropy;

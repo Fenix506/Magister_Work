@@ -28,7 +28,7 @@ namespace UI.ViewModels
         {
             DisplayName = "MinFiler";
             this.windowManager = windowManager;
-            BlockEntropy = 7.9;
+            BlockEntropy = 4;
             dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
         }
 
@@ -166,6 +166,8 @@ namespace UI.ViewModels
             await blockFiler.BlokingWithCompressAsync(AutoSaving);
 
             StopTimer();
+            FileEntropy = blockFiler.FileEntropy;
+            CountBlocks = blockFiler.BlockList.CountBlocks;
 
         }
         public void SaveBlocks()
@@ -174,7 +176,8 @@ namespace UI.ViewModels
             folderDialog.IsFolderPicker = true;
             if (folderDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-
+                var saver = new BlockSaver(folderDialog.FileName, blockFiler.FullFileName);
+                saver.SaveBlockedFile(blockFiler.BlockList);
             }
 
         }

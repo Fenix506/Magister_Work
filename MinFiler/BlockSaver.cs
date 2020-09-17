@@ -12,18 +12,19 @@ namespace MinFiler
     public class BlockSaver
     {
         private string fullDirectoryPath;
+        private string fullFileName;
         private int blockName;
 
         public BlockSaver(string absolutDirectoryPath, string fileName)
         {
-            fullDirectoryPath = GenerateDirectoryPath(absolutDirectoryPath, fileName);
+            fullFileName = fileName;
+            fullDirectoryPath = GenerateDirectoryPath(absolutDirectoryPath, new FileInfo(fullFileName).Name);
             CreateDirectory(fullDirectoryPath);
         }
         private string GenerateDirectoryPath(string absolutDirectoryPath, string fileName)
         {
             return Path.Combine(absolutDirectoryPath, fileName);
         }
-
         private void CreateDirectory(string fullDirectoryPath)
         {
             var directory = new DirectoryInfo(fullDirectoryPath);
@@ -32,56 +33,94 @@ namespace MinFiler
                 directory.Create();
             }
         }
-        private void SaveFileOnDisk(BlocksInList block)
-        {
-            var FilePath = Path.Combine(fullDirectoryPath, String.Format("{0:d8}", blockName++));
-
-            using (var FileStream = new FileStream(FilePath, FileMode.Create))
-            {
-                FileStream.Write(block.Data.ToArray(), 0, block.Data.Count);
-            }
-        }
-        private void DeleteFilesFromDisk(string directoryPath)
-        {
-            if (Directory.Exists(directoryPath))
-                Directory.Delete(directoryPath, true);
-        }
-
-        public void SaveBlockList(BlockList<BlockReference> blockList, ByteFile file)
+        public void SaveBlockList(BlockList blockList, ByteFile file)
         {
             BinaryWriter writer;
             int start;
 
             foreach (var block in blockList.Blocks)
             {
-                start = (int)(block.StartBlock % ByteFile.bufferSize);
-                writer = new BinaryWriter(File.Create(fullDirectoryPath + "\\" + blockName++));
-                writer.Write(file.Buffer,start,block.CountBytesInBlock);
+                start = (int)(block.GetFirst % ByteFile.bufferSize);
+                writer = new BinaryWriter(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)));
+                blockName++;
+                writer.Write(file.Buffer, start, block.CountBytesInBlock);
                 writer.Close();
             }
-
         }
-        public void SaveBlockList(BlockList<BlocksInList> blockList)
+        public void SaveBlockList(BlockList blockList)
         {
             BinaryWriter writer;
             foreach (var block in blockList.Blocks)
             {
-                writer = new BinaryWriter(File.Create(fullDirectoryPath + "\\" + (blockName++).ToString("{0:d8}")));
-                writer.Write(block.Data.ToArray());
+                writer = new BinaryWriter(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)));
+                blockName++;
+                writer.Write(block.GetBlock);
                 writer.Close();
             }
 
         }
-        public void SaveCompressBlockList(BlockListByteBlock blockList)
+        public void SaveCompressBlockList(BlockList blockList, ByteFile file)
+        {
+            GZipStream zipStream;
+            int start;
+
+            foreach (var block in blockList.Blocks)
+            {
+                start = (int)(block.GetFirst % ByteFile.bufferSize);
+                zipStream = new GZipStream(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)), CompressionLevel.Optimal);
+                blockName++;
+                zipStream.Write(file.Buffer, start, block.CountBytesInBlock);
+                zipStream.Close();
+            }
+        }
+        public void SaveCompressBlockList(BlockList blockList)
         {
             GZipStream zipStream;
             foreach (var block in blockList.Blocks)
             {
-                zipStream = new GZipStream(File.Create(fullDirectoryPath + "\\" + blockName++), CompressionLevel.Optimal);
-                zipStream.Write(block.Data.ToArray(), 0, block.Data.Count);
+                zipStream = new GZipStream(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)), CompressionLevel.Optimal);
+                blockName++;
+                zipStream.Write(block.GetBlock, 0, block.CountBytesInBlock);
                 zipStream.Close();
             }
         }
+        public void SaveBlockedFile(BlockList blockList)
+        {
+            switch (blockList)
+            {
+                case BlockListReference blockListReference:
+                    SaveReferenceBlocks(blockListReference);
+                    break;
+                case BlockListByteBlock blockListByteBlock:
+                    SaveBlockList(blockListByteBlock);
+                    break;
+                default:
+                    throw new InvalidCastException();
+            }
+        }
+
+        private void SaveReferenceBlocks(BlockListReference blockList)
+        {
+            var file = new ByteFile(fullFileName);
+
+            BinaryWriter writer;
+            int start;
+
+            foreach (var block in blockList.Blocks)
+            {
+                if (block.GetFirst >= ByteFile.bufferSize)
+                {
+                    file.ReadNewPartFile();
+                }
+                start = (int)(block.GetFirst % ByteFile.bufferSize);
+                writer = new BinaryWriter(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)));
+                blockName++;
+                writer.Write(file.Buffer, start, block.CountBytesInBlock);
+                writer.Close();
+            }
+
+        }
+
         public void CompressFile(string pathFile)
         {
 
@@ -99,6 +138,5 @@ namespace MinFiler
                 }
             }
         }
-
     }
 }

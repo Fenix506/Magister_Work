@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 
 namespace MinFiler.Blocks
 {
-    public class BlockReference : IBlock
+    public struct BlockReference : IBlock
     {
-        public long StartBlock;
+        private long StartBlock;
         public int CountBytes;
         public BlockReference(long StartBlock)
         {
             this.StartBlock = StartBlock;
             CountBytes = 0;
         }
-
+        public byte[] GetBlock => throw new NotImplementedException();
         public int CountBytesInBlock => CountBytes;
-
+        public long GetFirst => StartBlock;
         public void Add(byte addByte)
         {
             CountBytes++;
         }
+
     }
 }

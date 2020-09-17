@@ -6,22 +6,34 @@ using System.Threading.Tasks;
 
 namespace MinFiler.Blocks
 {
-    public abstract class BlockList<T> where T : IBlock
+    public abstract class BlockList : IDisposable
     {
         protected uint[] fullCountBytes;
         protected Dictionary<byte, uint> currentBlockStatistic;
-        abstract protected T currentBlock { get; set; }
-        abstract public LinkedList<T> Blocks { get; set; }
-        abstract public int CurrentBlockLength { get; }
+        abstract protected IBlock currentBlock { get; set; }
+        abstract public LinkedList<IBlock> Blocks { get; set; }
         public int CountBlocks => Blocks.Count;
+        public int CurrentBlockLength => currentBlock.CountBytesInBlock;
         public BlockList()
         {
             fullCountBytes = new uint[256];
             currentBlockStatistic = new Dictionary<byte, uint>();
         }
-        abstract public void AddToList(BlockList<T> blockList);
         abstract public void EndCurrentBlock();
         abstract public void CreateNewBlock();
+        public void AddToList(BlockList blockList)
+        {
+            {
+                EndCurrentBlock();
+                blockList.EndCurrentBlock();
+
+                foreach (var item in blockList.Blocks)
+                {
+                    Blocks.AddLast(item);
+                }
+                blockList.Dispose();
+            }
+        }
         public void AddToBlock(byte currentByte)
         {
             currentBlock.Add(currentByte);
