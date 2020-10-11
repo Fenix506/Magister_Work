@@ -158,16 +158,9 @@ namespace MinFiler
 
             saveTask.Start();
             saveTask.Wait();
+            BlockList.Dispose();
             BlockList = new BlockListReference();
         }
-
-
-        //public void SaveFile()
-        //{
-        //    saveTask = new Task(() => saver.CompressFile("C:\\Users\\maria\\Desktop\\Курсова робота.docx"));
-        //    saveTask.Start();
-        //    saveTask.Wait();
-        //}
         private BlockList BlokingEndOfFile()
         {
             byte readByte;
@@ -199,5 +192,6 @@ namespace MinFiler
             blockList.EndCurrentBlock();
             return blockList;
         }
+        
     }
 }

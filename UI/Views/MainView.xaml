@@ -12,19 +12,26 @@
         <Menu Height="25" VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Select" x:Name="SelectFile"></MenuItem>
-                <MenuItem Header="Generate" x:Name="GenerateFile"></MenuItem>
+                <MenuItem Header="Exit" x:Name="Exit"></MenuItem>
             </MenuItem>
-            <MenuItem Header="Option">
+            <MenuItem Header="Blocking">
                 <MenuItem Header="Bloking in one thread" x:Name="BlokingOneThread"></MenuItem>
                 <MenuItem Header="Bloking in multithread" x:Name="BlokingMultiThread"></MenuItem>
                 <MenuItem Header="Bloking with compression" x:Name="BlokingWithCompression"></MenuItem>
+                <MenuItem Header="Deblocking to file" x:Name="Deblocking"></MenuItem>
                 <MenuItem Header="Save Blocks" x:Name="SaveBlocks"/>
                 <MenuItem >
                     <MenuItem.Header>
                         <CheckBox x:Name="AutoSaving">Auto Saving</CheckBox>
                     </MenuItem.Header>
                 </MenuItem>
-                <MenuItem Header="Compression"></MenuItem>
+               
+            </MenuItem>
+            <MenuItem Header="Compress">
+                <MenuItem Header="Compress File" x:Name="CompressFile"></MenuItem>
+                <MenuItem Header="Decompress File" x:Name="DecompressFile"></MenuItem>
+                <MenuItem Header="Compress Blocks" x:Name="CompressBlocks"></MenuItem>
+                <MenuItem Header="Decompress Blocks" x:Name="DecompressBlocks"></MenuItem>
             </MenuItem>
             <MenuItem Header="About"></MenuItem>
         </Menu>
@@ -76,9 +83,12 @@
                 <TextBlock x:Name="Timer">Timer</TextBlock>
                 <ProgressBar  Minimum="0" Maximum="100" x:Name="ProgressBar" Height="25" />
                 <TextBlock 
-                
+                Height="100"
                 Background="Silver"
-                ></TextBlock>
+                >
+                    File Opened <LineBreak/>
+                    Start Blocking With Block Entroty 9.95
+                </TextBlock>
             </StackPanel>
 
         </Grid>

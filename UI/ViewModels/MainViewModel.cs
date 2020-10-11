@@ -28,7 +28,7 @@ namespace UI.ViewModels
         {
             DisplayName = "MinFiler";
             this.windowManager = windowManager;
-            BlockEntropy = 4;
+            BlockEntropy = 7.95;
             dispatcherTimer.Tick += new EventHandler(DispatcherTimer_Tick);
         }
 
@@ -179,7 +179,84 @@ namespace UI.ViewModels
                 var saver = new BlockSaver(folderDialog.FileName, blockFiler.FullFileName);
                 saver.SaveBlockedFile(blockFiler.BlockList);
             }
+        }
+        public void CompressFile()
+        {
+            var folderDialog = new CommonOpenFileDialog();
+            folderDialog.IsFolderPicker = true;
+            if (folderDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var path = Path.Combine(folderDialog.FileName, "compressed");
+                var saver = new BlockSaver(path, FileName);
+                saver.CompressFile();
+            }
 
+        }
+        public void DecompressFile()
+        {
+            var folderDialog = new CommonOpenFileDialog();
+            folderDialog.IsFolderPicker = true;
+            if (folderDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var path = Path.Combine(folderDialog.FileName, "decompressed");
+                var saver = new BlockSaver(path, FileName);
+                saver.DecompressFile();
+            }
+        }
+        public void CompressBlocks()
+        {
+            var folderDialogWhereBlocks = new CommonOpenFileDialog();
+            folderDialogWhereBlocks.Title = "Folder with blocks";
+            folderDialogWhereBlocks.IsFolderPicker = true;
+            if (folderDialogWhereBlocks.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folderDialogWhereSave = new CommonOpenFileDialog();
+                folderDialogWhereSave.Title = "Folder where save blocks";
+                folderDialogWhereSave.IsFolderPicker = true;
+                if (folderDialogWhereSave.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    var whereSavePath = Path.Combine(folderDialogWhereSave.FileName, "compressed");
+                    var saver = new BlockSaver(whereSavePath, folderDialogWhereBlocks.FileName);
+                    saver.CompressBlocksFile();
+                }
+            }
+        }
+
+        public void DecompressBlocks() 
+        {
+            var folderDialogWhereBlocks = new CommonOpenFileDialog();
+            folderDialogWhereBlocks.Title = "Folder with blocks";
+            folderDialogWhereBlocks.IsFolderPicker = true;
+            if (folderDialogWhereBlocks.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folderDialogWhereSave = new CommonOpenFileDialog();
+                folderDialogWhereSave.Title = "Folder where save blocks";
+                folderDialogWhereSave.IsFolderPicker = true;
+                if (folderDialogWhereSave.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    var whereSavePath = Path.Combine(folderDialogWhereSave.FileName, "decompressed");
+                    var saver = new BlockSaver(whereSavePath, folderDialogWhereBlocks.FileName);
+                    saver.DecompressBloksFile();
+                }
+            }
+        }
+        public void Deblocking()
+        {
+            var folderDialogWhereBlocks = new CommonOpenFileDialog();
+            folderDialogWhereBlocks.Title = "Folder with blocks";
+            folderDialogWhereBlocks.IsFolderPicker = true;
+            if (folderDialogWhereBlocks.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folderDialogWhereSave = new CommonOpenFileDialog();
+                folderDialogWhereSave.Title = "Folder where save blocks";
+                folderDialogWhereSave.IsFolderPicker = true;
+                if (folderDialogWhereSave.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    
+                    var saver = new DeblockFiler(folderDialogWhereBlocks.FileName, folderDialogWhereSave.FileName);
+                    saver.Deblocking();
+                }
+            }
         }
         #endregion
 

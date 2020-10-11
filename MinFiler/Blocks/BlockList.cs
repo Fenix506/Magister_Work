@@ -14,6 +14,7 @@ namespace MinFiler.Blocks
         abstract public LinkedList<IBlock> Blocks { get; set; }
         public int CountBlocks => Blocks.Count;
         public int CurrentBlockLength => currentBlock.CountBytesInBlock;
+        
         public BlockList()
         {
             fullCountBytes = new uint[256];
@@ -30,6 +31,10 @@ namespace MinFiler.Blocks
                 foreach (var item in blockList.Blocks)
                 {
                     Blocks.AddLast(item);
+                }
+                for (int i = 0; i < blockList.fullCountBytes.Length; i++)
+                {
+                    fullCountBytes[i] += blockList.fullCountBytes[i];
                 }
                 blockList.Dispose();
             }
@@ -49,20 +54,14 @@ namespace MinFiler.Blocks
         }
         public double CurrentBlockEntropy()
         {
-            uint length = 0;
+         
             double entropy = 0;
 
-            foreach (var item in currentBlockStatistic)
-            {
-                checked
-                {
-                    length += item.Value;
-                }
-            }
+          
             foreach (var item in currentBlockStatistic)
             {
 
-                double pi = (double)item.Value / length;
+                double pi = (double)item.Value / currentBlock.CountBytesInBlock;
 
                 checked { entropy += pi * Math.Log(pi, 2); }
 

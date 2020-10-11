@@ -13,13 +13,17 @@ namespace MinFiler
     {
         private string fullDirectoryPath;
         private string fullFileName;
+        private string fileName;
         private int blockName;
+        private Deflate deflate;
 
         public BlockSaver(string absolutDirectoryPath, string fileName)
         {
             fullFileName = fileName;
-            fullDirectoryPath = GenerateDirectoryPath(absolutDirectoryPath, new FileInfo(fullFileName).Name);
+            this.fileName = new FileInfo(fullFileName).Name;
+            fullDirectoryPath = GenerateDirectoryPath(absolutDirectoryPath, this.fileName);
             CreateDirectory(fullDirectoryPath);
+            deflate = new Deflate();
         }
         private string GenerateDirectoryPath(string absolutDirectoryPath, string fileName)
         {
@@ -61,27 +65,30 @@ namespace MinFiler
         }
         public void SaveCompressBlockList(BlockList blockList, ByteFile file)
         {
-            GZipStream zipStream;
             int start;
 
             foreach (var block in blockList.Blocks)
             {
                 start = (int)(block.GetFirst % ByteFile.bufferSize);
-                zipStream = new GZipStream(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)), CompressionLevel.Optimal);
+
+                deflate.CompressBlock(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName),
+                    file.Buffer,
+                    start,
+                    block.CountBytesInBlock);
+
                 blockName++;
-                zipStream.Write(file.Buffer, start, block.CountBytesInBlock);
-                zipStream.Close();
             }
         }
         public void SaveCompressBlockList(BlockList blockList)
         {
-            GZipStream zipStream;
+
             foreach (var block in blockList.Blocks)
             {
-                zipStream = new GZipStream(File.Create(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName)), CompressionLevel.Optimal);
+                deflate.CompressBlock(fullDirectoryPath + "\\" + String.Format("{0:d8}", blockName),
+                    block.GetBlock,
+                    0,
+                    block.CountBytesInBlock);
                 blockName++;
-                zipStream.Write(block.GetBlock, 0, block.CountBytesInBlock);
-                zipStream.Close();
             }
         }
         public void SaveBlockedFile(BlockList blockList)
@@ -98,7 +105,6 @@ namespace MinFiler
                     throw new InvalidCastException();
             }
         }
-
         private void SaveReferenceBlocks(BlockListReference blockList)
         {
             var file = new ByteFile(fullFileName);
@@ -120,21 +126,46 @@ namespace MinFiler
             }
 
         }
-
-        public void CompressFile(string pathFile)
+        public void CompressFile()
         {
-
-            using (FileStream sourceStream = new FileStream(pathFile, FileMode.Open))
+            using (FileStream sourceStream = new FileStream(fullFileName, FileMode.Open))
             {
-                // поток для записи сжатого файла
-                using (FileStream targetStream = File.Create(fullDirectoryPath + "\\cr"))
-                {
-                    // поток архивации
-                    using (GZipStream compressionStream = new GZipStream(targetStream, CompressionMode.Compress))
-                    {
-                        sourceStream.CopyTo(compressionStream); // копируем байты из одного потока в другой
+                var targetNamePath = Path.Combine(fullDirectoryPath, fileName);
+                deflate.CompressFile(sourceStream, targetNamePath);
+            }
+        }
+        public void DecompressFile()
+        {
+            using (FileStream sourceStream = new FileStream(fullFileName, FileMode.Open))
+            {
+                var targetNamePath = Path.Combine(fullDirectoryPath, fileName);
+                deflate.DecompressFile(sourceStream, targetNamePath);
+            }
 
-                    }
+        }
+        public void CompressBlocksFile()
+        {
+            var files = Directory.GetFiles(fullFileName);
+            foreach(var filePath in files)
+            {
+                using (var file = new FileStream(filePath,FileMode.Open))
+                {
+                    var targetNamePath = Path.Combine(fullDirectoryPath, String.Format("{0:d8}",blockName));
+                    blockName++;
+                    deflate.CompressFile(file, targetNamePath);
+                }
+            }
+        }
+        public void DecompressBloksFile()
+        {
+            var files = Directory.GetFiles(fullFileName);
+            foreach (var filePath in files)
+            {
+                using (var file = new FileStream(filePath, FileMode.Open))
+                {
+                    var targetNamePath = Path.Combine(fullDirectoryPath, String.Format("{0:d8}", blockName));
+                    blockName++;
+                    deflate.DecompressFile(file, targetNamePath);
                 }
             }
         }
